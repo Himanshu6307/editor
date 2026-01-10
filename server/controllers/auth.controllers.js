@@ -23,20 +23,25 @@ export const SignUp = async (req, res, next) => {
             return next(new ErrorHandler("Empty field", 404))
         }
 
-        const hashedPassword= await UserModel.hashedPassword(password)
+        const hashedPassword = await UserModel.hashedPassword(password)
 
         const user = await UserModel.create({
             email,
-            password:hashedPassword
+            password: hashedPassword
         })
 
         const token = jwt.sign(
             { userId: user._id, email: user.email },
-            process.env.JWT_SECRET || "your-secret-key",
+            process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
 
-        res.cookie("token",token).status(201).json(user)
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,      // localhost → false
+            sameSite: "lax",    // localhost
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        }).status(201).json(user)
 
 
     } catch (error) {
@@ -54,7 +59,7 @@ export const Login = async (req, res, next) => {
             return next(new ErrorHandler("Empty field", 404))
         }
 
-        const user = await UserModel.findOne({ $or: [{ email }, { password }] })
+        const user = await UserModel.findOne({ email })
         if (!user) {
             return next(new ErrorHandler("User not found", 404))
         }
@@ -67,11 +72,16 @@ export const Login = async (req, res, next) => {
 
         const token = jwt.sign(
             { userId: user._id, email: user.email },
-            process.env.JWT_SECRET || "your-secret-key",
+            process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
 
-        res.cookie("token", token).status(201).json(user)
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,      // localhost → false
+            sameSite: "lax",    // localhost
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        }).status(201).json(user)
 
 
     } catch (error) {
@@ -81,11 +91,17 @@ export const Login = async (req, res, next) => {
     }
 }
 
-export const Logout =async(req, res, next)=>{
+export const Logout = async (req, res, next) => {
     try {
-        res.cookie("token","",{expiresIn:Date.now()}).status(201).json({success:true ,message:"Logout Successfully"})
+        res.cookie("token", "", {
+            expires: new Date(0),
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false
+        }).status(200).json({ success: true, message: "Logout Successfully" });
+
     } catch (error) {
-        console.log("error in logout user backend ",error.message)
-        return next(new ErrorHandler(error.message,500))
+        console.log("error in logout user backend ", error.message)
+        return next(new ErrorHandler(error.message, 500))
     }
 }
