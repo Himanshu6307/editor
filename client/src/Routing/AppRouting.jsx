@@ -4,6 +4,7 @@ import Login from '../pages/Login'
 import SignUp from '../pages/SignUp'
 import { useSelector } from 'react-redux'
 import Home from '../pages/Home'
+import ProjectPage from '../pages/ProjectPage'
 
 function AppRouting() {
     const { userDetail,isLoading } = useSelector(state => state.user);
@@ -34,6 +35,7 @@ function AppRouting() {
                 />
                 <Route path="/login" element={!userDetail?<Login />:<Navigate to="/" replace />} />
                 <Route path="/signup" element={!userDetail?<SignUp />:<Navigate to="/" replace />} />
+                <Route path="/project/:projectId" element={userDetail?<ProjectPage />:<Navigate to="/login" replace />} />
             </Routes>
         </BrowserRouter>
     );

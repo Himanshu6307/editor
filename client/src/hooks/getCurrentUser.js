@@ -1,6 +1,5 @@
 import { useEffect } from "react"
 import { useDispatch } from "react-redux"
-// import { AxiosInstance } from "../axios/axios"
 import { setIsLoading, setUserDetail } from "../Store/Slices/user.slice"
 import axios from "axios"
 
